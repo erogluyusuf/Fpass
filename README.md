@@ -52,7 +52,7 @@ chmod +x fpass.sh
   ```bash
   ./fpass.sh -wifi
   
-- **Tüm Wi-Fi şifrelerini görüntüle:**
+- **Sadece belirli bir SSID için Wi-Fi şifresi al:**
   ```
   ./fpass.sh -id "EvAğı"
 
@@ -62,5 +62,80 @@ chmod +x fpass.sh
 ``` 
  
 - **Kullanıcı adına göre filtrele:**
+ ```  
+./fpass.sh -u johndoe
+```
+
+
+
+
+
+
+
+# 🔐 Fpass
+
+**Fpass** is a Bash script that allows you to view saved **Wi-Fi passwords** and **Firefox browser credentials** on Linux systems directly from the terminal. You can quickly filter results by username, website address, or SSID (Wi-Fi network name).
+
+> ⚠️ **Warning:** This tool is intended for **personal and educational use only**. Unauthorized access is illegal and the responsibility lies with the user.
+
+---
+
+## 🛠️ Features
+
+- Displays SSID and password from saved Wi-Fi profiles (`/etc/NetworkManager/system-connections`)
+- Lists saved Firefox usernames and passwords
+- Filtering support: by website, username, or SSID
+- Command-line parameter support
+- Matrix-style green text effect 🎥
+
+---
+
+## ⚙️ Requirements
+
+- Linux-based operating system
+- `sudo` privileges
+- Python 3
+- `7z` installed (only needed for 7z-based scenarios)
+- Firefox must be installed
+- `firefox_decrypt.py` script must be in the same directory as `fpass.sh`
+
+---
+
+## 🔧 Installation
+
+```bash
+git clone https://github.com/erogluyusuf/Fpass.git
+cd Fpass
+chmod +x fpass.sh
+./fpass.sh [OPTIONS]
+```
+
+### 🧩 Options:
+
+| Option            | Description |
+|-------------------|-------------|
+| `-w <website>`    | Filters entries by website (e.g., `-w facebook.com`) |
+| `-u <username>`   | Filters entries by username |
+| `-wifi`           | Shows all saved Wi-Fi profiles and passwords |
+| `-id <SSID>`      | Shows password for a specific SSID |
+| `-h, --help`      | Displays the help message |
+
+
+### 🔍 Examples
+
+- **Show all Wi-Fi passwords:**
+  ```bash
+  ./fpass.sh -wifi
+  
+- **Show password for a specific SSID:**
+  ```
+  ./fpass.sh -id "EvAğı"
+
+- **Show saved Firefox credentials for a specific website:**
+```
+  ./fpass.sh -w github.com
+``` 
+ 
+- **Filter credentials by username:**
  ```  
 ./fpass.sh -u johndoe
