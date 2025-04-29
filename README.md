@@ -1,3 +1,6 @@
+![Fpass Resmi](https://github.com/erogluyusuf/Fpass/blob/main/Fpass.png)
+
+
 # 🔐 Fpass
 
 **Fpass**, Linux sistemlerinde kayıtlı olan **Wi-Fi şifrelerini** ve **Firefox tarayıcı şifrelerini** komut satırından görüntülemenizi sağlayan bir Bash scriptidir. Kullanıcı adı, site adresi veya SSID (Wi-Fi ağı adı) gibi filtrelerle şifreleri hızlıca bulabilirsiniz.
