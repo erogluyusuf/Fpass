@@ -1,0 +1,97 @@
+#!/bin/bash
+
+# Parametreleri al
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -w) filter_website="$2"; shift 2 ;;
+        -u) filter_username="$2"; shift 2 ;;
+        -wifi) show_wifi_all=true; shift ;;
+        -id) filter_ssid="$2"; shift 2 ;;
+        -h|--help) 
+            echo "Kullanım: $0 [PARAMETRELER]"
+            echo ""
+            echo "Bu komut, Wi-Fi profilleri, şifreler ve tarayıcı parolalarını gösterir."
+            echo ""
+            echo "Parametreler:"
+            echo "  -w <site>      : Belirtilen siteyi arar (örn: https://www.example.com)"
+            echo "  -u <kullanıcı> : Belirtilen kullanıcı adını arar"
+            echo "  -wifi          : Wi-Fi profillerini gösterir"
+            echo "  -id <SSID>     : Belirtilen SSID'ye sahip Wi-Fi'yi gösterir"
+            echo "  -h, --help     : Yardım mesajını görüntüler"
+            exit 0
+            ;;
+        *) echo "Geçersiz parametre: $1"; exit 1 ;;
+    esac
+done
+
+function matrix_effect() {
+    text="$1"
+    delay="$2"
+
+    for ((i=0; i<${#text}; i++)); do
+        char="${text:i:1}"
+        echo -ne "\e[32m$char\e[0m"
+        sleep "$delay"
+    done
+    echo ""
+}
+
+## ⚙️ Wi-Fi şifrelerini gösterme
+if [[ -z "$filter_website" && -z "$filter_username" ]]; then
+    # Yani -w ya da -u yoksa, wifi gösterilir
+    if [[ "$show_wifi_all" = true || -n "$filter_ssid" || ( -z "$show_wifi_all" && -z "$filter_ssid" ) ]]; then
+        echo -e "\n📶 Wi-Fi Profilleri ve Şifreleri:"
+        echo "----------------------------------"
+        listed=false
+        for file in /etc/NetworkManager/system-connections/*; do
+            ssid=$(grep '^ssid=' "$file" | cut -d= -f2)
+            psk=$(grep '^psk=' "$file" | cut -d= -f2)
+
+            if [[ -n "$filter_ssid" && "$ssid" != "$filter_ssid" ]]; then
+                continue
+            fi
+
+            echo "SSID: $ssid"
+            printf "Şifre: "; matrix_effect "$psk" 0.05
+            echo "----------------------------------"
+            listed=true
+        done
+
+        if [[ "$listed" = false ]]; then
+            echo "Eşleşen Wi-Fi profili bulunamadı."
+        fi
+    fi
+fi
+
+## 🌐 Firefox parolalarını çözme
+if [[ -n "$filter_website" || -n "$filter_username" || ( -z "$show_wifi_all" && -z "$filter_ssid" ) ]]; then
+    echo -e "\n🌐 Tarayıcı Parolaları:"
+    echo "----------------------------------"
+
+    firefox_profile=$(find "$HOME/.mozilla/firefox" -maxdepth 1 -type d -name "*default*" | head -n 1)
+
+    if [ -d "$firefox_profile" ]; then
+        real_home=$(getent passwd "$SUDO_USER" | cut -d: -f6 2>/dev/null || echo "$HOME")
+
+        if [[ -n "$filter_website" || -n "$filter_username" ]]; then
+            sudo HOME="$real_home" python3 "$(dirname "$0")/firefox_decrypt.py" | \
+            awk -v w="$filter_website" -v u="$filter_username" '
+                BEGIN { RS=""; FS="\n" }
+                {
+                    match_w = 1; match_u = 1;
+                    if (w != "") match_w = 0;
+                    if (u != "") match_u = 0;
+                    for (i=1; i<=NF; i++) {
+                        if (w != "" && $i ~ w) match_w = 1;
+                        if (u != "" && $i ~ u) match_u = 1;
+                    }
+                    if (match_w && match_u) print $0 "\n-------------------------";
+                }'
+        else
+            sudo HOME="$real_home" python3 "$(dirname "$0")/firefox_decrypt.py"
+        fi
+    else
+        echo "Firefox profili bulunamadı."
+    fi
+    echo "----------------------------------"
+fi
